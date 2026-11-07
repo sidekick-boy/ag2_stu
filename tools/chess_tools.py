@@ -33,3 +33,35 @@ def get_piece_count(side: str) -> str:
 
     else:
         return "参数错误：side 只能是红方或黑方"
+
+
+@tool
+def validate_move(
+    piece: str,
+    from_position: str,
+    to_position: str
+) -> str:
+    """
+    接收中国象棋的一次走棋请求。
+
+    Args:
+        piece: 棋子名称，例如马、车、炮。
+        from_position: 棋子的起始位置。
+        to_position: 棋子的目标位置。
+
+    Returns:
+        返回接收到的走棋请求信息。
+    """
+
+    print(
+        f"[Tool执行] 收到走棋请求："
+        f"棋子={piece}，"
+        f"起点={from_position}，"
+        f"终点={to_position}"
+    )
+
+    return (
+        f"已收到走棋请求："
+        f"{piece} 从 {from_position} 移动到 {to_position}。"
+        f"本次仅验证参数传递，不判断走棋是否合法。"
+    )
