@@ -1,0 +1,48 @@
+import asyncio
+
+from config.llm_config import get_llm_config
+from agents.planner_agent import create_planner_agent
+from agents.writer_agent import create_writer_agent
+
+
+async def main():
+
+    # 1. 获取 DeepSeek 配置
+    llm_config = get_llm_config()
+
+    # 2. 创建两个数字员工
+    planner = create_planner_agent(llm_config)
+    writer = create_writer_agent(llm_config)
+
+    print("=" * 55)
+    print("AG2 数字员工团队启动")
+    print("模型：DeepSeek")
+    print("员工数量：2")
+    print("=" * 55)
+
+    # 3. 分别测试两个 Agent
+    print("\n【员工一：Planner 任务规划师】")
+    print("-" * 55)
+
+    planner_reply = await planner.ask(
+        "请为我们公司制定一个 AI 数字员工团队建设计划，"
+        "要求分阶段实施。"
+    )
+
+    print(planner_reply.body)
+
+    print("\n【员工二：Writer 文案执行师】")
+    print("-" * 55)
+
+    writer_reply = await writer.ask(
+        "请撰写一份企业 AI 数字员工团队建设项目介绍，"
+        "包含项目背景、建设目标、主要价值和实施意义。"
+    )
+
+    print(writer_reply.body)
+
+    print("\n两个数字员工均已完成独立测试。")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

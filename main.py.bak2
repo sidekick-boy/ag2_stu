@@ -1,0 +1,91 @@
+
+import asyncio
+
+from config.llm_config import get_llm_config
+from agents.planner_agent import create_planner_agent
+from agents.writer_agent import create_writer_agent
+
+
+async def main():
+
+    # 1. 初始化模型配置
+    llm_config = get_llm_config()
+
+    # 2. 创建数字员工
+    planner = create_planner_agent(llm_config)
+    writer = create_writer_agent(llm_config)
+
+    print("=" * 60)
+    print("AG2 多数字员工协作系统启动")
+    print("模型：DeepSeek")
+    print("团队：Planner + Writer")
+    print("=" * 60)
+
+    # 3. 用户提出任务
+    user_task = """
+请为一家企业制定 AI 数字员工团队建设方案。
+
+要求：
+1. 分阶段实施。
+2. 明确每个阶段的建设目标。
+3. 明确主要工作内容。
+4. 明确阶段交付成果。
+5. 方案具有实际落地价值。
+"""
+
+    # 4. 第一阶段：Planner 制定计划
+    print("\n[第一阶段] Planner 正在分析任务...")
+    print("-" * 60)
+
+    planner_reply = await planner.ask(user_task)
+
+    planner_result = planner_reply.body
+
+    if not planner_result:
+        raise RuntimeError("Planner 未生成有效任务计划")
+
+    print(planner_result)
+
+    # 5. 第二阶段：将 Planner 的实际输出交给 Writer
+    print("\n[第二阶段] 正在将任务计划交给 Writer...")
+    print("-" * 60)
+
+    writer_task = f"""
+现在你需要执行 Planner 制定的工作计划。
+
+【用户原始任务】
+{user_task}
+
+【Planner 制定的任务计划】
+{planner_result}
+
+请严格按照 Planner 的任务计划完成工作。
+
+要求：
+1. 充分理解任务计划。
+2. 按照计划逐项执行。
+3. 确保所有关键要求得到落实。
+4. 输出完整、专业、可交付的成果。
+5. 不要只复述任务计划，要真正完成任务。
+"""
+
+    # Writer 接收上一个 Agent 的实际输出
+    writer_reply = await writer.ask(writer_task)
+
+    writer_result = writer_reply.body
+
+    if not writer_result:
+        raise RuntimeError("Writer 未生成有效工作成果")
+
+    print(writer_result)
+
+    # 6. 最终交付
+    print("\n" + "=" * 60)
+    print("多数字员工协作任务完成")
+    print("Planner：任务规划完成")
+    print("Writer：任务执行完成")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
