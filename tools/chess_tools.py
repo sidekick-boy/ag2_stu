@@ -1,6 +1,7 @@
 from ag2 import tool,DataInput
 # from typing import Literal
 from enum import Enum
+from typing import TypedDict,Optional
 
 class ChessSide(str, Enum):
     RED = "红方"
@@ -11,6 +12,18 @@ class ErrorCode(Enum):
     INVALID_COUNT_TYPE = "数量类型错误"
     INVALID_COUNT = "数量超出范围"
     INVALID_BOOLEAN = "布尔参数错误"
+
+class PieceCountData(TypedDict):
+    side: str
+    count: int
+    include_general: bool
+
+
+class ChessToolResult(TypedDict):
+    success: bool
+    code: str
+    message: str
+    data: Optional[PieceCountData]
 
 
 @tool
@@ -88,42 +101,48 @@ def get_piece_count_by_side(
 
     # 1. 检查棋方
     if not isinstance(side, ChessSide):
-        return DataInput({
-    "success": False,
-    "code": ErrorCode.INVALID_SIDE.value,
-    "message": "参数错误：side 必须是有效的棋方枚举",
-    "data": None
-})
+        result: ChessToolResult = {
+            "success": False,
+            "code": ErrorCode.INVALID_SIDE.value,
+            "message": "参数错误：side 必须是有效的棋方枚举",
+            "data": None
+        }
+        return DataInput(result)
 
     # 2. 检查数量类型
     if type(count) is not int:
-        return DataInput({
+        result: ChessToolResult = {
             "success": False,
             "code": ErrorCode.INVALID_COUNT_TYPE.name,
             "message": "参数错误：count 必须是整数",
             "data": None
-        })
+        }
+        return DataInput(result)
 
     # 3. 检查数量范围
     if not 1 <= count <= 16:
-        return DataInput({
+        result: ChessToolResult = {
             "success": False,
             "code": ErrorCode.INVALID_COUNT.name,
-            "message": "参数错误：count 必须在1到16之间",
+            "message": "参数错误：count 必须在 1 到 16 之间",
             "data": None
-        })
+        }
+        return DataInput(result)
 
     # 4. 检查布尔参数
     if type(include_general) is not bool:
-        return DataInput({
+        result: ChessToolResult = {
             "success": False,
             "code": ErrorCode.INVALID_BOOLEAN.name,
             "message": "参数错误：include_general 必须是布尔值",
             "data": None
-        })
+        }
+
+        return DataInput(result)
 
     print(f"[Tool执行] 棋方={side.value}，数量={count}，是否包含将帅={include_general}")
-    return  DataInput({
+
+    result: ChessToolResult = {
             "success": True,
             "code": "OK",
             "message": "查询成功",
@@ -132,4 +151,6 @@ def get_piece_count_by_side(
         "count": count,
         "include_general": include_general
     }
-        })
+        }
+
+    return DataInput(result)
