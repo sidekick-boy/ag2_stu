@@ -306,6 +306,27 @@
 
 **当前掌握程度边界：** 已验证单工具调用、工具选择、单参数和三参数传递、可选参数默认值的代码定义、正常枚举参数调用，以及至少一个明确的业务范围拒绝场景。尚未验证结构化返回值、统一业务错误码、异常处理策略、工具组合或真实象棋规则引擎。模型曾补充工具未返回的棋子构成信息，因此后续需学习如何约束回答依据，并设计结构化、完整的数据返回方式。
 
+### 12.5 TypedDict 结构化返回值（已完成用户测试并提交）
+
+用户已在 `tools/chess_tools.py` 中完成 TypedDict 类型定义和结构化返回值改造，并反馈代码已测试、提交 GitHub。助手已检查当前仓库文件，确认实现包含以下内容：
+
+- 从 `typing` 导入 `TypedDict` 和 `Optional`。
+- 定义 `PieceCountData(TypedDict)`，字段为 `side: str`、`count: int`、`include_general: bool`。
+- 定义 `ChessToolResult(TypedDict)`，字段为 `success: bool`、`code: str`、`message: str`、`data: Optional[PieceCountData]`。
+- `get_piece_count_by_side(...) -> DataInput` 保留 AG2 的 `DataInput` 返回注解；函数内部先构造符合 `ChessToolResult` 的字典，再通过 `DataInput(result)` 返回。
+- 四个失败分支均返回统一结构：`INVALID_SIDE`、`INVALID_COUNT_TYPE`、`INVALID_COUNT`、`INVALID_BOOLEAN`；失败时 `success=False`、`data=None)。
+- 成功分支返回 `success=True`、`code="OK"`、`message="查询成功"`，并在 `data` 中提供棋方、数量和是否包含将帅。
+
+**已反馈的运行验证：**
+- [x] 成功场景：红方、数量 16、`include_general=True)，工具执行日志确认参数正确，Agent 最终答复为查询成功，进程退出代码为 0。
+- [x] 数量范围失败场景：红方、数量 0，返回 `success=False`、`code=INVALID_COUNT`、范围错误信息和 `data=None)，进程退出代码为 0。
+- [x] 用户反馈其余失败分支已完成测试，并已将代码提交 GitHub；各分支的具体输入与逐项控制台输出未在当前对话中逐条提供，因此不记录未经展示的具体测试值。
+
+**概念边界：**
+- `TypedDict` 为字典提供静态类型结构和 IDE/类型检查支持，本身不会在运行时自动执行字段校验。
+- `Optional[PieceCountData]` 表示 `data` 这个键仍然是必填键，但它的值可以是 `PieceCountData` 或 `None`；这与“键可以缺省”不同。
+- `DataInput` 仍承担 AG2 结构化返回包装的职责，不能因为定义了 `ChessToolResult` 就将函数返回注解随意替换为该 TypedDict。
+
 ### 12.4 AG2 Tool 与中国象棋业务的边界
 
 - Agent/LLM 负责理解自然语言需求、判断何时调用工具、选择工具并提供参数。
@@ -315,9 +336,9 @@
 
 ## 13. 当前阶段与下一步
 
-**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证；AG2 Tool 基础、Agent-as-Tool、Python Function Tool、Agent 调用工具、单参数和多参数传递、`Literal`/`Enum` 参数约束基础、默认参数定义及 Python 函数内部业务参数校验均已完成相应教学与实战练习。用户已验证 `ChessSide` 枚举在 AG2 1.3.0 正常工具调用中的传递，并实现 `get_piece_count_by_side` 的棋方、数量类型、数量范围和布尔类型检查；明确反馈 `count=17` 被范围校验拒绝。本轮参数校验测试已由用户确认完成。中国象棋软件本身尚未开始实现。
+**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、工具选择与调用、单参数和多参数传递、枚举参数、默认参数及业务参数校验均已完成相应教学与实战练习。用户已完成并提交 TypedDict 结构化返回值改造：定义 `PieceCountData` 和 `ChessToolResult`，在 `get_piece_count_by_side` 的成功及四类失败分支统一构造结构化结果，并通过 AG2 的 `DataInput` 返回。已反馈成功查询（红方、16、包含将帅）和数量范围失败（count=0）两类运行结果，均正常退出；用户另确认其余失败分支已测试并提交。中国象棋软件本身尚未开始实现。
 
-**下一步教学：** 进入结构化返回值设计：从简单字符串返回升级为明确的数据结构，学习成功/失败状态、业务数据、错误码和错误信息的组织方式；随后学习异常处理、多工具注册与组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
+**下一步教学：** 继续 TypedDict 进阶，学习 `NotRequired` 与 `total=False`，重点区分“值允许为 `None`”与“字段键可以缺省”；随后再学习结构化返回值的设计取舍、异常处理、多 Tool 注册与组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
 
 **后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
 
