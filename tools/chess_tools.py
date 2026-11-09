@@ -65,3 +65,13 @@ def validate_move(
         f"{piece} 从 {from_position} 移动到 {to_position}。"
         f"本次仅验证参数传递，不判断走棋是否合法。"
     )
+
+@tool
+def get_piece_count_by_side(
+        side: str,
+        count: int,
+        include_general: bool
+) -> str:
+
+    print(f"[Tool执行] 棋方={side}，数量={count}，是否包含将帅={include_general}")
+    return f"返回结果：{side}，数量{count}，包含将帅={include_general}"

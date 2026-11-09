@@ -6,6 +6,7 @@ from config.llm_config import get_llm_config
 from tools.chess_tools import get_board_info
 from tools.chess_tools import get_piece_count
 from tools.chess_tools import validate_move
+from tools.chess_tools import get_piece_count_by_side
 
 
 async def main():
@@ -32,17 +33,25 @@ piece：棋子名称
 from_position：起始位置
 to_position：目标位置
 
+当用户要求查询某一方的棋子数量，并指定数量及是否包含将帅时，
+必须调用 get_piece_count_by_side 工具。
+
+必须正确传递三个参数：
+side：棋方，字符串类型
+count：棋子数量，整数类型
+include_general：是否包含将帅，布尔类型
+
 不得自行判断工具没有验证的走棋规则。
 
 不得凭空编造工具返回的数据。
 """,
         config=llm_config,
-        tools=[get_board_info, get_piece_count, validate_move],
+        tools=[get_board_info, get_piece_count, validate_move, get_piece_count_by_side],
     )
 
     # 3. 向 Agent 提出问题
     reply = await chess_agent.ask(
-        "请让马从 b1 移动到 c3，调用工具记录这次走棋请求。"
+        "请调用工具，查询红方棋子数量16个，并且包含将帅。"
     )
 
     # 4. 输出 Agent 最终回答
