@@ -51,7 +51,7 @@ include_general：是否包含将帅，布尔类型
 
     # 3. 向 Agent 提出问题
     reply = await chess_agent.ask(
-        "请调用工具，查询红方棋子数量16个，并且包含将帅。"
+        "请调用工具，查询红方棋子数量16个，不指定是否包含将帅。"
     )
 
     # 4. 输出 Agent 最终回答

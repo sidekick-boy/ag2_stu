@@ -70,7 +70,7 @@ def validate_move(
 def get_piece_count_by_side(
         side: str,
         count: int,
-        include_general: bool
+        include_general: bool = True
 ) -> str:
 
     print(f"[Tool执行] 棋方={side}，数量={count}，是否包含将帅={include_general}")
