@@ -276,8 +276,8 @@
 
 ### 12.2 已提交并检查的示例文件
 
-- `tools/chess_tools.py`：定义 `get_board_info()`、`get_piece_count(side)` 和 `validate_move(piece, from_position, to_position)` 三个工具。
-- `run_chess_tool_agent.py`：创建 `ChessAssistant`，加载 DeepSeek 配置，并注册上述工具。
+- `tools/chess_tools.py`：定义 `get_board_info()`、`get_piece_count(side)`、`validate_move(piece, from_position, to_position)` 和 `get_piece_count_by_side(side, count, include_general=True)` 四个工具；并定义 `ChessSide(str, Enum)` 枚举。
+- `run_chess_tool_agent.py`：创建 `ChessAssistant`，加载 DeepSeek 配置，并注册上述四个工具。
 
 仓库实际代码已检查：
 - `get_board_info() -> str`：返回中国象棋棋盘为 9 列 10 行、红黑双方各 16 枚棋子、共 32 枚的信息。
@@ -295,8 +295,16 @@
 - [x] 多参数工具 `validate_move(piece, from_position, to_position)` 已由 Agent 实际调用。
 - [x] 用户反馈控制台日志确认三个业务参数均正确到达 Python 函数：棋子=马、起点=b1、终点=c3。
 - [x] Agent 最终答复正确引用工具返回，并明确说明本次仅验证参数传递、不判断走棋是否合法。
+- [x] 使用 `enum.Enum` 定义 `ChessSide(str, Enum)`，枚举成员为 `RED="红方"`、`BLACK="黑方"`。
+- [x] 用户通过 AG2 Agent 实际调用枚举参数工具，正常传入红方时，Python 函数成功执行并通过 `side.value` 读取枚举值；验证了当前 AG2 1.3.0 调用链下的正常枚举参数兼容性。
+- [x] 多参数工具 `get_piece_count_by_side(side, count, include_general=True)` 已注册到 Agent，包含棋方枚举、整数数量和带默认值的布尔参数。
+- [x] 用户已在函数体内实现四项业务校验：棋方必须是 `ChessSide` 成员；`count` 必须满足 `type(count) is int`（排除 Python 中 `bool` 是 `int` 子类的情况）；`count` 范围为 1～16；`include_general` 必须满足 `type(include_general) is bool`。
+- [x] 用户反馈 `count=17` 的 Agent 调用被工具拒绝，返回“参数错误：count 必须在 1 到 16 之间”，确认数量上限校验生效。
+- [x] 用户确认本轮参数校验测试已完成。
 
-**当前掌握程度边界：** 已验证单工具调用、工具选择、单参数和三参数字符串传递、函数执行及结果返回。尚未验证可选参数、默认值、复杂参数校验、结构化返回值、工具失败处理、工具组合或真实棋规引擎。模型在最终回答中曾补充工具未返回的棋子构成信息，因此后续需学习如何约束回答依据，并设计结构化、完整的数据返回方式。
+**测试记录边界：** 当前对话中明确留存的具体测试输出是 `count=17` 被拒绝；其余边界值和类型测试虽由用户确认已完成，但各项输入、控制台日志和返回结果未逐项留存在当前上下文，因此不将它们单独标记为已通过。`count=17` 的错误返回说明函数走到了数量范围拒绝分支；仍应结合 `[Tool执行]` 日志判断是否进入正常业务执行分支。
+
+**当前掌握程度边界：** 已验证单工具调用、工具选择、单参数和三参数传递、可选参数默认值的代码定义、正常枚举参数调用，以及至少一个明确的业务范围拒绝场景。尚未验证结构化返回值、统一业务错误码、异常处理策略、工具组合或真实象棋规则引擎。模型曾补充工具未返回的棋子构成信息，因此后续需学习如何约束回答依据，并设计结构化、完整的数据返回方式。
 
 ### 12.4 AG2 Tool 与中国象棋业务的边界
 
@@ -307,9 +315,9 @@
 
 ## 13. 当前阶段与下一步
 
-**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证；AG2 Tool 基础、Agent-as-Tool、Python Function Tool、Agent 调用工具、单参数传递和三参数传递均已完成基础验证。多参数教学工具 `validate_move` 已由 Agent 实际调用，用户提供的运行日志确认 `piece`、`from_position`、`to_position` 三个参数正确到达 Python 函数，且 Agent 正确说明该工具未进行棋规判断。中国象棋软件本身尚未开始实现。
+**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证；AG2 Tool 基础、Agent-as-Tool、Python Function Tool、Agent 调用工具、单参数和多参数传递、`Literal`/`Enum` 参数约束基础、默认参数定义及 Python 函数内部业务参数校验均已完成相应教学与实战练习。用户已验证 `ChessSide` 枚举在 AG2 1.3.0 正常工具调用中的传递，并实现 `get_piece_count_by_side` 的棋方、数量类型、数量范围和布尔类型检查；明确反馈 `count=17` 被范围校验拒绝。本轮参数校验测试已由用户确认完成。中国象棋软件本身尚未开始实现。
 
-**下一步教学：** 学习 Python Function Tool 的参数类型、可选参数、默认值和参数约束；随后进行参数校验、结构化返回值、异常处理、多工具注册和组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
+**下一步教学：** 进入结构化返回值设计：从简单字符串返回升级为明确的数据结构，学习成功/失败状态、业务数据、错误码和错误信息的组织方式；随后学习异常处理、多工具注册与组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
 
 **后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
 
