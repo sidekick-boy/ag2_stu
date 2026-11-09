@@ -1,4 +1,5 @@
 from ag2 import tool
+from typing import Literal
 
 @tool
 def get_board_info() -> str:
@@ -68,7 +69,7 @@ def validate_move(
 
 @tool
 def get_piece_count_by_side(
-        side: str,
+        side: Literal["红方","黑方"],
         count: int,
         include_general: bool = True
 ) -> str:
