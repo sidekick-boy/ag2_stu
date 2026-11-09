@@ -314,7 +314,7 @@
 - 定义 `PieceCountData(TypedDict)`，字段为 `side: str`、`count: int`、`include_general: bool`。
 - 定义 `ChessToolResult(TypedDict)`，字段为 `success: bool`、`code: str`、`message: str`、`data: Optional[PieceCountData]`。
 - `get_piece_count_by_side(...) -> DataInput` 保留 AG2 的 `DataInput` 返回注解；函数内部先构造符合 `ChessToolResult` 的字典，再通过 `DataInput(result)` 返回。
-- 四个失败分支均返回统一结构：`INVALID_SIDE`、`INVALID_COUNT_TYPE`、`INVALID_COUNT`、`INVALID_BOOLEAN`；失败时 `success=False`、`data=None)。
+- 四个失败分支均返回统一结构：`INVALID_SIDE`、`INVALID_COUNT_TYPE`、`INVALID_COUNT`、`INVALID_BOOLEAN`；失败时 `success=False`、`data=None`。
 - 成功分支返回 `success=True`、`code="OK"`、`message="查询成功"`，并在 `data` 中提供棋方、数量和是否包含将帅。
 
 **已反馈的运行验证：**
