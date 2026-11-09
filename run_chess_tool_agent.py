@@ -7,8 +7,6 @@ from tools.chess_tools import get_board_info
 from tools.chess_tools import get_piece_count
 from tools.chess_tools import validate_move
 from tools.chess_tools import get_piece_count_by_side
-
-
 async def main():
 
     # 1. 获取 DeepSeek 模型配置
@@ -51,7 +49,7 @@ include_general：是否包含将帅，布尔类型
 
     # 3. 向 Agent 提出问题
     reply = await chess_agent.ask(
-        "请调用工具，查询蓝方棋子数量16个，包含将帅。"
+        "请调用工具，查询红方棋子数量17个，包含将帅。"
     )
 
     # 4. 输出 Agent 最终回答

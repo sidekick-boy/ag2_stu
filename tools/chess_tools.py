@@ -1,5 +1,11 @@
 from ag2 import tool
-from typing import Literal
+# from typing import Literal
+from enum import Enum
+
+class ChessSide(str, Enum):
+    RED = "红方"
+    BLACK = "黑方"
+
 
 @tool
 def get_board_info() -> str:
@@ -69,10 +75,25 @@ def validate_move(
 
 @tool
 def get_piece_count_by_side(
-        side: Literal["红方","黑方"],
+        side: ChessSide,
         count: int,
         include_general: bool = True
 ) -> str:
+    # 1. 检查棋方
+    if not isinstance(side, ChessSide):
+        return "参数错误：side 必须是有效的棋方枚举"
 
-    print(f"[Tool执行] 棋方={side}，数量={count}，是否包含将帅={include_general}")
-    return f"返回结果：{side}，数量{count}，包含将帅={include_general}"
+    # 2. 检查数量类型
+    if type(count) is not int:
+        return "参数错误：count 必须是整数"
+
+    # 3. 检查数量范围
+    if not 1 <= count <= 16:
+        return "参数错误：count 必须在1到16之间"
+
+    # 4. 检查布尔参数
+    if type(include_general) is not bool:
+        return "参数错误：include_general 必须是布尔值"
+
+    print(f"[Tool执行] 棋方={side.value}，数量={count}，是否包含将帅={include_general}")
+    return f"返回结果：{side.value}，数量{count}，包含将帅={include_general}"
