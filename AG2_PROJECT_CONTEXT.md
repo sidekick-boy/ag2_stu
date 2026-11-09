@@ -276,8 +276,8 @@
 
 ### 12.2 已提交并检查的示例文件
 
-- `tools/chess_tools.py`：定义 `get_board_info()` 和 `get_piece_count(side)` 两个工具。
-- `run_chess_tool_agent.py`：创建 `ChessAssistant`，加载 DeepSeek 配置，并通过 `tools=[get_board_info, get_piece_count]` 注册工具。
+- `tools/chess_tools.py`：定义 `get_board_info()`、`get_piece_count(side)` 和 `validate_move(piece, from_position, to_position)` 三个工具。
+- `run_chess_tool_agent.py`：创建 `ChessAssistant`，加载 DeepSeek 配置，并注册上述工具。
 
 仓库实际代码已检查：
 - `get_board_info() -> str`：返回中国象棋棋盘为 9 列 10 行、红黑双方各 16 枚棋子、共 32 枚的信息。
@@ -291,9 +291,12 @@
 - [x] 通过 Agent 提问触发 `get_board_info`，控制台出现 `[Tool执行]` 日志，确认工具由 AG2 实际调用，而非仅由模型凭知识回答。
 - [x] Agent 根据“查询黑方初始棋子数量”的请求选择 `get_piece_count`，成功传递 `side="黑方"`。
 - [x] Python 函数执行日志显示正在查询黑方棋子数量，并返回 16 枚；Agent 最终答复与工具返回数量一致。
-- [x] 用户已将上述两个示例文件提交到 GitHub，且助手已读取仓库文件确认其存在。
+- [x] 用户已将上述示例文件提交到 GitHub，且助手已读取仓库文件确认其存在。
+- [x] 多参数工具 `validate_move(piece, from_position, to_position)` 已由 Agent 实际调用。
+- [x] 用户反馈控制台日志确认三个业务参数均正确到达 Python 函数：棋子=马、起点=b1、终点=c3。
+- [x] Agent 最终答复正确引用工具返回，并明确说明本次仅验证参数传递、不判断走棋是否合法。
 
-**当前掌握程度边界：** 已验证单工具调用、工具选择、单个字符串参数传递、函数执行及结果返回。尚未验证多参数工具、复杂参数校验、结构化返回值、工具失败处理、工具组合或真实棋规引擎。模型在最终回答中曾补充工具未返回的棋子构成信息，因此后续需学习如何约束回答依据，并设计结构化、完整的数据返回方式。
+**当前掌握程度边界：** 已验证单工具调用、工具选择、单参数和三参数字符串传递、函数执行及结果返回。尚未验证可选参数、默认值、复杂参数校验、结构化返回值、工具失败处理、工具组合或真实棋规引擎。模型在最终回答中曾补充工具未返回的棋子构成信息，因此后续需学习如何约束回答依据，并设计结构化、完整的数据返回方式。
 
 ### 12.4 AG2 Tool 与中国象棋业务的边界
 
@@ -304,9 +307,9 @@
 
 ## 13. 当前阶段与下一步
 
-**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证；AG2 Tool 基础、Agent-as-Tool、Python Function Tool、Agent 调用工具及单参数传递已完成基础验证。当前正在学习多参数 Python Function Tool。中国象棋软件本身尚未开始实现。
+**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证；AG2 Tool 基础、Agent-as-Tool、Python Function Tool、Agent 调用工具、单参数传递和三参数传递均已完成基础验证。多参数教学工具 `validate_move` 已由 Agent 实际调用，用户提供的运行日志确认 `piece`、`from_position`、`to_position` 三个参数正确到达 Python 函数，且 Agent 正确说明该工具未进行棋规判断。中国象棋软件本身尚未开始实现。
 
-**下一步教学：** 继续完成多参数 Python Function Tool 实验。以教学接口 `validate_move(piece, from_position, to_position)` 为例，核对工具定义、参数 Schema、Agent 实际调用日志和 Python 函数收到的参数，解释控制台参数数量与业务参数数量可能存在的差异。该练习仅用于学习参数传递，不代表已经实现或验证完整象棋走棋规则。之后依次学习参数类型与约束、参数校验、结构化返回值、异常处理、多工具注册和组合调用。
+**下一步教学：** 学习 Python Function Tool 的参数类型、可选参数、默认值和参数约束；随后进行参数校验、结构化返回值、异常处理、多工具注册和组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
 
 **后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
 
