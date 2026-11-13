@@ -1,7 +1,9 @@
 from ag2 import tool,DataInput
 # from typing import Literal
 from enum import Enum
-from typing import TypedDict,Optional
+from typing import TypedDict, Optional
+from typing_extensions import Required, NotRequired
+
 
 class ChessSide(str, Enum):
     RED = "红方"
@@ -18,12 +20,29 @@ class PieceCountData(TypedDict):
     count: int
     include_general: bool
 
-
 class ChessToolResult(TypedDict):
     success: bool
     code: str
     message: str
     data: Optional[PieceCountData]
+
+class ChessPlayerData(TypedDict):
+    name: str
+    score: int
+
+
+class ChessBoardData(TypedDict, total=True):
+    red_count: int
+    black_count: int
+    current_player: ChessPlayerData
+
+class ChessQueryResult(TypedDict, total=False):
+    success: Required[bool]
+    message: Required[str]
+    board: Optional[ChessBoardData]
+    request_id: str
+
+
 
 
 @tool
