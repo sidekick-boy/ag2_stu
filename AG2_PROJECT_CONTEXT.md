@@ -334,11 +334,55 @@
 - 不得让 LLM 凭自然语言知识替代象棋规则引擎；工具返回应成为业务事实的依据。
 - 当前示例工具只是教学用信息查询工具，不是完整象棋规则实现。
 
+### 12.6 TypedDict 进阶：total、Required、NotRequired 与 Optional（概念学习已完成，进阶代码验证待完成）
+
+用户已完成本轮 TypedDict 进阶概念学习与问答练习，掌握范围如下：
+
+- `total=True`：当前 TypedDict 类体中未单独标注的字段默认必填。
+- `total=False`：当前 TypedDict 类体中未单独标注的字段默认可缺省；该设置只作用于当前 TypedDict，不会传递到嵌套 TypedDict。
+- `Required[T]`：将当前字段明确设为必填，即使外层使用 `total=False`。
+- `NotRequired[T]`：将当前字段明确设为可缺省，即使外层使用 `total=True`。
+- `Optional[T]`：表示字段值允许为 `None`，不负责决定键是否必须存在。
+- 嵌套 TypedDict 各自执行自身的字段必填规则；外层的 `total` 不会改变内层字段规则。
+
+**已完成的概念练习：**
+- [x] 判断 `total=False` 下普通字段可以缺省。
+- [x] 判断 `total=True` 下普通字段必须存在。
+- [x] 判断 `Required` / `NotRequired` 对 `total` 默认行为的覆盖。
+- [x] 区分 `Optional[T]` 与 `NotRequired[T]`。
+- [x] 理解嵌套 TypedDict 的必填规则彼此独立。
+
+**当前仓库代码检查结果（2026-11-13）：**
+
+`tools/chess_tools.py` 当前定义为：
+
+```python
+class ChessQueryResult(TypedDict, total=False):
+    success: Required[bool]
+    message: Required[str]
+    board: Optional[ChessBoardData]
+    request_id: str
+```
+
+该定义的实际字段规则是：
+- `success`、`message` 必须存在，因为使用了 `Required`。
+- `board`、`request_id` 可以缺省，因为类使用了 `total=False`。
+- `board` 若存在，值还可以是 `None`，因为其类型是 `Optional[ChessBoardData]`。
+- 在这个 `total=False` 类中，给 `board` 或 `request_id` 再加 `NotRequired` 不会改变字段是否必填，属于语义冗余。
+
+**待完成：**
+- [ ] 用户亲自调整或确认 `ChessQueryResult` 的字段声明风格；可比较 `total=False + Required` 与 `total=True + NotRequired` 两种表达。
+- [ ] 使用静态类型检查器验证必填键、可缺省键及嵌套字段规则。
+- [ ] 运行实际测试，确认类型定义与预期数据结构一致。
+- [ ] 用户完成进阶代码调整和测试后，再将进阶代码实践标记为完成。
+
+本节目前只记录概念学习与仓库代码检查，不代表进阶类型定义已经完成运行时校验；TypedDict 本身仍不会在运行时自动校验字典结构。
+
 ## 13. 当前阶段与下一步
 
 **当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、工具选择与调用、单参数和多参数传递、枚举参数、默认参数及业务参数校验均已完成相应教学与实战练习。用户已完成并提交 TypedDict 结构化返回值改造：定义 `PieceCountData` 和 `ChessToolResult`，在 `get_piece_count_by_side` 的成功及四类失败分支统一构造结构化结果，并通过 AG2 的 `DataInput` 返回。已反馈成功查询（红方、16、包含将帅）和数量范围失败（count=0）两类运行结果，均正常退出；用户另确认其余失败分支已测试并提交。中国象棋软件本身尚未开始实现。
 
-**下一步教学：** 继续 TypedDict 进阶，学习 `NotRequired` 与 `total=False`，重点区分“值允许为 `None`”与“字段键可以缺省”；随后再学习结构化返回值的设计取舍、异常处理、多 Tool 注册与组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
+**下一步教学：** 完成 TypedDict 进阶代码设计与静态类型检查，比较 `total=False + Required` 和 `total=True + NotRequired` 两种字段声明方式；随后学习结构化返回值的设计取舍、异常处理、多 Tool 注册与组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
 
 **后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
 
