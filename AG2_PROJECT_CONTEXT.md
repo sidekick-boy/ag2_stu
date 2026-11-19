@@ -378,11 +378,31 @@ class ChessQueryResult(TypedDict, total=False):
 
 本节目前只记录概念学习与仓库代码检查，不代表进阶类型定义已经完成运行时校验；TypedDict 本身仍不会在运行时自动校验字典结构。
 
+### 12.7 DataInput 与 TypedDict 的职责边界（源码确认，学习收尾）
+
+用户在项目虚拟环境中通过 `inspect.getsource(DataInput)` 查看了 AG2 1.3.0 当前安装版本的类定义，实际输出为：
+
+```python
+class DataInput(Input):
+    """Data input event sent to the model."""
+
+    data: SendableMessage = Field(kw_only=False)
+```
+
+据此确认：
+- `DataInput` 继承自 AG2 的 `Input`，属于 AG2 输入事件体系。
+- `data` 是其承载输入内容的字段，类型标注为 `SendableMessage`。
+- `Field(kw_only=False)` 表示该字段可作为位置参数传入，例如 `DataInput(result)`。
+- 在本项目工具返回场景中，`TypedDict` 描述业务结果字典的字段结构；`DataInput` 则将该数据包装为 AG2 的输入事件对象。
+- 这次源码查看仅用于澄清框架对象与业务数据结构的分工，不作为继续深入 AG2 内部源码的学习主线。
+
+**学习状态：** 已完成必要概念确认。后续仅在遇到具体 API 使用问题时再查阅源码，不继续追踪该类的内部实现。
+
 ## 13. 当前阶段与下一步
 
-**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、工具选择与调用、单参数和多参数传递、枚举参数、默认参数及业务参数校验均已完成相应教学与实战练习。用户已完成并提交 TypedDict 结构化返回值改造：定义 `PieceCountData` 和 `ChessToolResult`，在 `get_piece_count_by_side` 的成功及四类失败分支统一构造结构化结果，并通过 AG2 的 `DataInput` 返回。已反馈成功查询（红方、16、包含将帅）和数量范围失败（count=0）两类运行结果，均正常退出；用户另确认其余失败分支已测试并提交。中国象棋软件本身尚未开始实现。
+**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、工具选择与调用、单参数和多参数传递、枚举参数、默认参数及业务参数校验均已完成相应教学与实战练习。TypedDict 结构化返回值已完成用户测试并提交；TypedDict 的 total、Required、NotRequired、Optional 概念学习已完成。用户还通过 AG2 1.3.0 安装环境的源码输出确认了 `DataInput` 继承自 `Input`，并以 `data: SendableMessage` 字段承载数据，从而明确 TypedDict 负责业务数据结构描述、DataInput 负责 AG2 输入事件包装；该源码确认环节已收尾，不再继续追踪内部实现。用户已完成并提交 TypedDict 结构化返回值改造：定义 `PieceCountData` 和 `ChessToolResult`，在 `get_piece_count_by_side` 的成功及四类失败分支统一构造结构化结果，并通过 AG2 的 `DataInput` 返回。已反馈成功查询（红方、16、包含将帅）和数量范围失败（count=0）两类运行结果，均正常退出；用户另确认其余失败分支已测试并提交。中国象棋软件本身尚未开始实现。
 
-**下一步教学：** 完成 TypedDict 进阶代码设计与静态类型检查，比较 `total=False + Required` 和 `total=True + NotRequired` 两种字段声明方式；随后学习结构化返回值的设计取舍、异常处理、多 Tool 注册与组合调用。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
+**下一步教学：** 教学主线转入 AG2 多 Agent 协作能力。先系统区分 Agent-as-Tool 与 GroupChat 的适用场景、协作方式和控制权，再结合已有 Coordinator、Planner、Writer 团队逐步学习消息流转、任务委派、团队控制与协作闭环。TypedDict 进阶代码设计及静态类型检查仍保留为待完成的 Tool 专项练习，但不再作为进入多 Agent 协作学习的阻塞项。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
 
 **后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
 
