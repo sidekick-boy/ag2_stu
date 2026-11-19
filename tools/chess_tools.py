@@ -36,11 +36,14 @@ class ChessBoardData(TypedDict, total=True):
     black_count: int
     current_player: ChessPlayerData
 
-class ChessQueryResult(TypedDict, total=False):
-    success: Required[bool]
-    message: Required[str]
-    board: Optional[ChessBoardData]
-    request_id: str
+
+
+
+class ChessQueryResult(TypedDict, total=True):
+    success: bool
+    message: str
+    board: NotRequired[Optional[ChessBoardData]]
+    request_id: NotRequired[str]
 
 
 
@@ -120,7 +123,7 @@ def get_piece_count_by_side(
 
     # 1. 检查棋方
     if not isinstance(side, ChessSide):
-        result: ChessToolResult = {
+        result = {
             "success": False,
             "code": ErrorCode.INVALID_SIDE.value,
             "message": "参数错误：side 必须是有效的棋方枚举",
@@ -130,7 +133,7 @@ def get_piece_count_by_side(
 
     # 2. 检查数量类型
     if type(count) is not int:
-        result: ChessToolResult = {
+        result = {
             "success": False,
             "code": ErrorCode.INVALID_COUNT_TYPE.name,
             "message": "参数错误：count 必须是整数",
@@ -140,7 +143,7 @@ def get_piece_count_by_side(
 
     # 3. 检查数量范围
     if not 1 <= count <= 16:
-        result: ChessToolResult = {
+        result = {
             "success": False,
             "code": ErrorCode.INVALID_COUNT.name,
             "message": "参数错误：count 必须在 1 到 16 之间",
@@ -150,7 +153,7 @@ def get_piece_count_by_side(
 
     # 4. 检查布尔参数
     if type(include_general) is not bool:
-        result: ChessToolResult = {
+        result = {
             "success": False,
             "code": ErrorCode.INVALID_BOOLEAN.name,
             "message": "参数错误：include_general 必须是布尔值",
@@ -161,7 +164,7 @@ def get_piece_count_by_side(
 
     print(f"[Tool执行] 棋方={side.value}，数量={count}，是否包含将帅={include_general}")
 
-    result: ChessToolResult = {
+    result = {
             "success": True,
             "code": "OK",
             "message": "查询成功",
@@ -173,3 +176,19 @@ def get_piece_count_by_side(
         }
 
     return DataInput(result)
+
+#
+# if __name__ == "__main__":
+#     result1: ChessQueryResult = {
+#         "success": True,
+#         "message": "查询成功"
+#     }
+#
+#     result2: ChessQueryResult = {
+#         "success": True,
+#         "message": "查询成功",
+#         "board": None
+#     }
+#
+#     print(result1)
+#     print(result2)

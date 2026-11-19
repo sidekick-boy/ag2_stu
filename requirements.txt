@@ -19,3 +19,5 @@ pydantic
 
 # 5. HTTP Client
 httpx
+
+mypy
