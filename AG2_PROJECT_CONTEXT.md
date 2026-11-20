@@ -398,11 +398,49 @@ class DataInput(Input):
 
 **学习状态：** 已完成必要概念确认。后续仅在遇到具体 API 使用问题时再查阅源码，不继续追踪该类的内部实现。
 
+### 12.8 TransitionGraph、条件转移与审核返工（概念学习进行中，代码待验证）
+
+用户已开始学习 AG2 Network Workflow 中的 `TransitionGraph` 与条件转移机制，并提供过当前安装版本相关的构造定义：
+
+```python
+@dataclass(slots=True)
+class TransitionGraph:
+    initial_speaker: str
+    transitions: list[Transition] = field(default_factory=list)
+    default_target: TransitionTarget = field(default_factory=...)
+    max_turns: int | None = None
+```
+
+本轮已完成的概念学习与练习：
+- [x] 理解从固定顺序协作升级到条件转移与审核返工的目标：在 Writer 执行后增加 Reviewer，由审核结果决定通过或退回修改。
+- [x] 理解 `FromSpeaker` 根据当前发言者身份匹配转移条件。
+- [x] 理解 `ContextEquals(key, value)` 根据 Workflow 共享上下文中的键值匹配转移条件；用户正确选择了以 `ContextEquals("review_status", "REJECTED")` 将拒绝结果路由回 Writer。
+- [x] 初步理解 Context Variables 的用途：保存审核状态、审核次数和审核反馈等可供转移条件读取的数据。
+- [x] 理解 Agent 自然语言消息“审核通过”本身不会自动改变工作流状态；必须显式更新上下文，条件转移才能读取到新状态。
+- [x] 理解 `EV_CONTEXT_SET` 是官方文档示例中更新 Workflow Context Variables 的事件机制，`ContextEquals` 则负责读取状态进行条件判断。
+- [x] 理解审核状态更新应保持字段语义一致：通过时更新 `review_status` 为 `APPROVED`、递增 `review_count` 并清空旧的 `review_feedback`。用户在该练习中选择 C，回答正确。
+- [x] 讨论了 `review_count`（审核总次数）与 `rework_count`（实际返工次数）的区别；如需限制返工次数，建议使用独立的 `rework_count`，避免混淆。
+
+重要机制与风险：
+- `ContextEquals` 读取的是 Workflow 状态，不是 Agent 消息正文。
+- Context 状态可能持续保留；若 `review_status` 一直为 `REJECTED`，拒绝条件可能在后续转移评估中继续匹配。因此实际闭环需要设计状态更新/重置、规则优先级及最大轮次限制。
+- 官方文档示例中的 `EV_CONTEXT_SET` / `ChannelInject` 等 API 仍需在用户的 AG2 1.3.0 虚拟环境中核实，不能仅凭最新版文档认定与安装版本完全一致。
+
+**当前边界：** 上述内容属于概念学习和问答练习，不代表已经编写或运行 TransitionGraph、Context Variables 更新 Tool，也不代表审核返工闭环已经实现。
+
+**下一步验证：** 用户先在项目虚拟环境运行以下命令，检查 AG2 1.3.0 是否导出相关名称，并将实际输出反馈后再继续：
+
+```powershell
+python -c "import ag2.network as n; print('EV_CONTEXT_SET:', hasattr(n, 'EV_CONTEXT_SET')); print('ChannelInject:', hasattr(n, 'ChannelInject')); print('相关名称:', [x for x in dir(n) if 'Context' in x or 'Channel' in x or 'EVENT' in x])"
+```
+
+确认 API 后，再逐步设计并由用户亲自编写 Reviewer 状态更新 Tool，最后构建最小化条件转移与审核返工示例，逐项运行验证。
+
 ## 13. 当前阶段与下一步
 
-**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、工具选择与调用、单参数和多参数传递、枚举参数、默认参数及业务参数校验均已完成相应教学与实战练习。TypedDict 结构化返回值已完成用户测试并提交；TypedDict 的 total、Required、NotRequired、Optional 概念学习已完成。用户还通过 AG2 1.3.0 安装环境的源码输出确认了 `DataInput` 继承自 `Input`，并以 `data: SendableMessage` 字段承载数据，从而明确 TypedDict 负责业务数据结构描述、DataInput 负责 AG2 输入事件包装；该源码确认环节已收尾，不再继续追踪内部实现。用户已完成并提交 TypedDict 结构化返回值改造：定义 `PieceCountData` 和 `ChessToolResult`，在 `get_piece_count_by_side` 的成功及四类失败分支统一构造结构化结果，并通过 AG2 的 `DataInput` 返回。已反馈成功查询（红方、16、包含将帅）和数量范围失败（count=0）两类运行结果，均正常退出；用户另确认其余失败分支已测试并提交。中国象棋软件本身尚未开始实现。
+**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、工具选择与调用、单参数和多参数传递、枚举参数、默认参数及业务参数校验均已完成相应教学与实战练习。TypedDict 结构化返回值已完成用户测试并提交；TypedDict 的 total、Required、NotRequired、Optional 概念学习已完成。用户通过 AG2 1.3.0 安装环境的源码输出确认了 `DataInput` 继承自 `Input`，并以 `data: SendableMessage` 字段承载数据。用户已完成并提交 TypedDict 结构化返回值改造，且反馈成功查询和数量范围失败场景运行正常。当前教学已进入 AG2 Network Workflow 的 TransitionGraph、条件转移与审核返工机制；已完成 FromSpeaker、ContextEquals、Context Variables、EV_CONTEXT_SET 的概念讲解和审核状态更新练习，但 AG2 1.3.0 对应 API 尚未在本地核实，尚未编写或运行条件转移工作流。中国象棋软件本身尚未开始实现。
 
-**下一步教学：** 教学主线转入 AG2 多 Agent 协作能力。先系统区分 Agent-as-Tool 与 GroupChat 的适用场景、协作方式和控制权，再结合已有 Coordinator、Planner、Writer 团队逐步学习消息流转、任务委派、团队控制与协作闭环。TypedDict 进阶代码设计及静态类型检查仍保留为待完成的 Tool 专项练习，但不再作为进入多 Agent 协作学习的阻塞项。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
+**下一步教学：** 先由用户在 AG2 1.3.0 虚拟环境检查 `EV_CONTEXT_SET`、`ChannelInject` 等实际导出，再根据实际 API 逐步编写 Reviewer 状态更新 Tool 和最小化 TransitionGraph 条件转移示例。之后再扩展为 Writer → Reviewer → 通过/返工的闭环，并验证状态重置、返工次数和 `max_turns` 等终止保护。TypedDict 进阶代码设计及静态类型检查仍保留为待完成专项练习。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
 
 **后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
 
