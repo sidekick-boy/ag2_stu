@@ -13,7 +13,7 @@
 - IDE：PyCharm
 - 编程语言：Python
 - 依赖管理：pip，使用 requirements.txt 管理项目依赖
-- 多智能体框架：AG2 1.3.0
+- 多智能体框架：AG2 1.3.2（当前本地虚拟环境已验证）
 - 模型服务：DeepSeek
 - 前端交互方向：AG-UI
 
@@ -40,7 +40,7 @@
 | 操作系统 | Windows 11 |
 | 开发工具 | PyCharm |
 | 编程语言 | Python |
-| 多智能体框架 | AG2 1.3.0 |
+| 多智能体框架 | AG2 1.3.2（当前版本） |
 | 模型服务 | DeepSeek |
 | 前端交互方向 | AG-UI |
 | 依赖管理 | pip / requirements.txt |
@@ -445,3 +445,29 @@ python -c "import ag2.network as n; print('EV_CONTEXT_SET:', hasattr(n, 'EV_CONT
 **后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
 
 继续教学前应先检查仓库当前文件和 AG2 1.3.0 对应 API；按“原理—用户亲自编写—运行—核对实际日志和输出”的方式推进。未经用户明确授权，不直接修改项目业务代码。
+
+
+## 14. 官方资料来源与版本追溯（持续维护）
+
+本项目的 AG2 学习阶段必须同步记录对应的官方资料来源，避免只保存结论而无法追溯 API 定义和版本变化。详细链接清单维护在仓库文件 `docs/AG2_OFFICIAL_REFERENCES.md`。
+
+### 14.1 当前版本基准
+
+- 当前本地虚拟环境已通过 `importlib.metadata.version('ag2')` 验证为 **AG2 1.3.2**（用户于 2026-11-20 提供实际输出）。
+- 本文件早期章节中出现的 AG2 1.3.0 是历史学习记录，不再代表当前安装版本。
+- 查阅官方 GitHub 主干源码时，应记录具体文件链接及对应 commit；主干源码不自动等同于本地安装包的发布版本。涉及版本敏感 API 时，优先用本地 AG2 1.3.2 环境验证。
+- 当前已从本地 1.3.2 安装目录搜索到 `EV_CONTEXT_SET`、`ChannelInject`、`workflow_helpers.py`、`ContextEquals` 等相关符号；这一步只确认符号存在，不代表审核返工流程已实现或测试通过。
+
+### 14.2 本阶段官方资料与学习边界
+
+当前主题：AG2 Network Workflow 的 Context Variables、条件转移与审核返工。
+
+已查阅的官方资料：
+- `ag2/network/workflow_helpers.py`：`set_context()` / `delete_context()` 封装上下文事件，Tool 作者通常调用辅助函数，无需直接构造事件。
+- `ag2/network/client/inject.py`：`ChannelInject` 是注入当前 Channel 的类型别名。
+- `website/docs/user-guide/network/workflow.mdx`：说明 `TransitionGraph`、`ContextEquals`、条件转移顺序、状态持续性及终止机制。
+
+本阶段采用“先掌握公开 API 的用途与调用方式，再按需深入源码”的教学策略。用户是 Python 初学者，不要求为使用高级 API 而先读懂整个事件系统或依赖注入实现。优先掌握 `ChannelInject` 用于取得当前 Channel、`set_context()` 用于更新 Workflow 共享上下文、`ContextEquals` 用于按上下文值路由；`EV_CONTEXT_SET` 作为底层事件名识别即可，暂不要求直接操作。
+
+当前进度仅为 API 概念学习、官方资料查阅和本地符号搜索。Reviewer 状态更新 Tool、条件转移配置、返工循环、最大返工次数及实际运行验证均待用户分步完成。
+
