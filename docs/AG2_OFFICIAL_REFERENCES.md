@@ -4,13 +4,13 @@
 
 ## 当前学习基准
 
-- 最近一次有用户实际输出支持的本地版本：**AG2 1.3.2**（2026-11-20）；1.3.4 本地升级待验证
+- 本地虚拟环境当前版本：**AG2 1.3.4**（用户于 2026-11-27 提供实际命令输出确认）
 - 版本验证方式：`python -c "import importlib.metadata; print(importlib.metadata.version('ag2'))"`
-- 用户于 2026-11-20 提供的实际输出：`1.3.2`；仓库 requirements.txt 已于 2026-11-27 固定为 `ag2[openai,ag-ui]==1.3.4`
+- 历史版本输出：2026-11-20 为 `1.3.2`；最新验证输出：2026-11-27 为 `1.3.4`；仓库 requirements.txt 固定为 `ag2[openai,ag-ui]==1.3.4`
 - 官方源码链接以下列 AG2 仓库 commit 快照固定，避免 `main` 分支后续变化导致链接内容漂移：
   - 源码快照 commit：`6d2dd8bab8af873ea29ed759cfacb572466d925e`
   - 仓库：https://github.com/ag2ai/ag2
-- 注意：固定 commit 的官方源码快照不自动等同于本地安装包的发布 tag。涉及版本敏感行为时，以本地 AG2 1.3.2 环境运行验证为准。
+- 注意：固定 commit 的官方源码快照不自动等同于本地安装包的发布 tag。涉及版本敏感行为时，以本地 AG2 1.3.4 环境运行验证为准。
 
 ## 阶段：Network Workflow、Context Variables 与条件转移
 
@@ -84,9 +84,17 @@
 - [x] 仓库 `requirements.txt` 已由用户提交并固定为 `ag2[openai,ag-ui]==1.3.4`。
 - [x] 已通过 GitHub 提交 diff 确认 `tools/reviewer_tools.py` 已提交。
 - [x] 已查阅 AG2 官方 `v1.3.4` tag 中的 `ChannelInject` 和 `set_context()` 实现；这些 API 在该 tag 中仍存在。
-- [ ] 本地虚拟环境尚未执行升级。
-- [ ] 尚未从本地环境重新验证 `importlib.metadata.version("ag2")` 输出为 1.3.4。
-- [ ] 升级后尚未运行项目导入检查和 Reviewer 工具检查。
+- [x] 用户已完成本地虚拟环境升级，并于 2026-11-27 提供命令 `python -c "import importlib.metadata; print(importlib.metadata.version('ag2'))"` 的实际输出 `1.3.4`。
+- [ ] 尚未运行项目导入检查和 Reviewer 工具检查。
 - [ ] Reviewer 工具尚未在真实 Workflow 中验证 Channel 注入和 Context 更新。
 
 升级时应在项目原有 `.venv` 中执行 `python -m pip install -r requirements.txt`，随后核对实际版本；不要仅凭 requirements.txt 的固定值认定运行环境已升级。
+
+
+### 当前进度补充（2026-11-27）
+
+- [x] 用户正确理解 `ChannelInject` 的职责：AG2 在适用的 Workflow 工具执行上下文中注入当前 Channel；该参数不是由大模型填写的业务工具参数。
+- [x] 已重新检查 GitHub 项目目录与入口代码：`tools/reviewer_tools.py` 已存在；`agents/` 中目前有 Coordinator、Planner、Writer；`workflows/first_multi_agent.py` 当前为空；`main.py` 仍通过 `coordinator.ask()` 运行原有 Agent-as-Tool 协作，并未启动 Network Workflow。
+- [ ] 下一步先做 Reviewer 工具模块导入检查：`python -c "from tools.reviewer_tools import submit_review; print(submit_review)"`。
+- [ ] 导入成功后，再逐步建立最小 Network Workflow 入口；只有在 Workflow 工具执行环境中验证 Channel 注入，不能用普通独立函数调用代替。
+- [ ] 继续验证 `set_context()` 写入的 `review_status` / `review_feedback`，再配置 `ContextEquals` 条件转移与返工闭环。
