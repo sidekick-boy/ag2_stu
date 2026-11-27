@@ -505,3 +505,25 @@ TypedDict 进阶代码设计及静态类型检查仍保留为待完成专项练�
 
 当前已完成 API 概念学习、官方资料查阅、本地旧版本符号搜索，并已由用户编写提交 Reviewer 状态更新 Tool。该工具尚未在真实 Workflow 中运行验证；条件转移配置、返工循环、最大返工次数及端到端运行验证仍待用户分步完成。
 
+
+
+### 12.10 AG2 1.3.4 本地升级确认与 Reviewer 工具验证进度（2026-11-27）
+
+- [x] 用户已确认本地虚拟环境升级完成。
+- [x] 用户提供实际命令输出：在项目虚拟环境执行 `python -c "import importlib.metadata; print(importlib.metadata.version('ag2'))"`，结果为 `1.3.4`。
+- [x] 当前版本与仓库 `requirements.txt` 中的 `ag2[openai,ag-ui]==1.3.4` 一致。
+- [x] 用户正确回答依赖注入理解题：`ChannelInject` 由 AG2 从当前 Workflow 运行上下文提供，不需要大模型在工具参数 JSON 中传入。
+- [x] 重新检查 GitHub 目录：`tools/reviewer_tools.py` 已提交；`agents/` 目前有 Coordinator、Planner、Writer；`workflows/first_multi_agent.py` 是空文件；`main.py` 仍使用 `coordinator.ask()` 运行原来的 Agent-as-Tool 协作流程。
+- [ ] Reviewer 工具模块导入检查尚未由用户运行。
+- [ ] 尚未创建或启动 Network Workflow，因此不能声称 ChannelInject 已在实际 Workflow 中注入成功。
+- [ ] 尚未验证 `set_context()` 的两个字段可被 Workflow 条件读取。
+- [ ] 尚未实现和运行 Writer → Reviewer → APPROVED 通过 / REJECTED 返工闭环。
+
+**下一步教学顺序：**
+1. 用户在项目虚拟环境运行 `python -c "from tools.reviewer_tools import submit_review; print(submit_review)"`，确认模块与依赖可正常导入。
+2. 检查导入结果后，逐步学习并由用户亲自构建最小 Network Workflow 入口，不覆盖原有 `main.py`。
+3. 将 Reviewer 注册到 Workflow，验证运行时 `ChannelInject` 注入。
+4. 验证 `set_context()` 更新 Workflow Context，再配置 `ContextEquals` 条件转移。
+5. 完成通过、返工、状态重置、返工计数与 `max_turns` 保护的端到端测试。
+
+**官方版本基准：** 本阶段使用 AG2 官方 `v1.3.4` tag 的源码和文档，详见 `docs/AG2_OFFICIAL_REFERENCES.md`。用户亲自编写项目代码；助手负责教学、官方资料核对和项目进度记录，不直接代写或提交业务代码。
