@@ -98,3 +98,10 @@
 - [ ] 下一步先做 Reviewer 工具模块导入检查：`python -c "from tools.reviewer_tools import submit_review; print(submit_review)"`。
 - [ ] 导入成功后，再逐步建立最小 Network Workflow 入口；只有在 Workflow 工具执行环境中验证 Channel 注入，不能用普通独立函数调用代替。
 - [ ] 继续验证 `set_context()` 写入的 `review_status` / `review_feedback`，再配置 `ContextEquals` 条件转移与返工闭环。
+
+
+### Reviewer 工具导入检查（2026-11-27）
+
+- [x] 用户在 AG2 1.3.4 虚拟环境执行 `python -c "from tools.reviewer_tools import submit_review; print(submit_review)"`，成功输出 `ag2.tools.final.function_tool.FunctionTool` 对象，无导入异常。
+- [x] 用户正确理解工具调用参数边界：大模型提供 `review_status` 与 `review_feedback`；`channel: ChannelInject` 由 AG2 在 Workflow 工具执行上下文注入。
+- [ ] 该导入检查仅验证模块加载和 `@tool` 包装，不代表 Channel 注入、`set_context()` 或条件转移已运行验证。
