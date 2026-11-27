@@ -527,3 +527,19 @@ TypedDict 进阶代码设计及静态类型检查仍保留为待完成专项练�
 5. 完成通过、返工、状态重置、返工计数与 `max_turns` 保护的端到端测试。
 
 **官方版本基准：** 本阶段使用 AG2 官方 `v1.3.4` tag 的源码和文档，详见 `docs/AG2_OFFICIAL_REFERENCES.md`。用户亲自编写项目代码；助手负责教学、官方资料核对和项目进度记录，不直接代写或提交业务代码。
+
+
+### 12.11 Reviewer 工具导入检查通过（2026-11-27）
+
+- [x] 用户在项目 `.venv`（AG2 1.3.4）执行 `python -c "from tools.reviewer_tools import submit_review; print(submit_review)"`，成功输出 `<ag2.tools.final.function_tool.FunctionTool object ...>`，无导入异常。
+- [x] 确认 `@tool` 已将 `submit_review` 包装为 AG2 `FunctionTool` 对象。
+- [x] 用户正确回答：大模型只需提供 `review_status` 和 `review_feedback`，`channel: ChannelInject` 由 AG2 在 Workflow 执行环境中注入。
+- [ ] 当前仅验证导入和工具包装；尚未验证真实 Workflow 中的 Channel 注入、`set_context()` 更新和条件转移。
+- [ ] 下一步新增独立的 Reviewer Agent 创建模块并挂载 `submit_review`，不修改现有 `main.py` 与 Coordinator/Planner/Writer。
+
+**AG2 1.3.4 官方 Workflow 学习来源：**
+- Workflow 使用文档：https://github.com/ag2ai/ag2/blob/v1.3.4/website/docs/user-guide/network/workflow.mdx
+- Context Variables 文档：https://github.com/ag2ai/ag2/blob/v1.3.4/website/docs/user-guide/network/context_variables.mdx
+- 官方 Feedback Loop 示例：https://github.com/ag2ai/ag2/blob/v1.3.4/website/docs/user-guide/network/pattern_cookbook/feedback_loop.mdx
+- Workflow helper：`set_context(channel, key, value)`，源码：https://github.com/ag2ai/ag2/blob/v1.3.4/ag2/network/workflow_helpers.py
+
