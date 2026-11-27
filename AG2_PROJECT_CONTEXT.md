@@ -13,7 +13,7 @@
 - IDE：PyCharm
 - 编程语言：Python
 - 依赖管理：pip，使用 requirements.txt 管理项目依赖
-- 多智能体框架：AG2 1.3.2（当前本地虚拟环境已验证）
+- 多智能体框架：项目依赖已固定为 AG2 1.3.4；本地虚拟环境升级及版本验证待完成（此前已验证 1.3.2）
 - 模型服务：DeepSeek
 - 前端交互方向：AG-UI
 
@@ -40,7 +40,7 @@
 | 操作系统 | Windows 11 |
 | 开发工具 | PyCharm |
 | 编程语言 | Python |
-| 多智能体框架 | AG2 1.3.2（当前版本） |
+| 多智能体框架 | AG2 1.3.4（requirements.txt 目标版本；本地安装待验证） |
 | 模型服务 | DeepSeek |
 | 前端交互方向 | AG-UI |
 | 依赖管理 | pip / requirements.txt |
@@ -453,9 +453,9 @@ python -c "import ag2.network as n; print('EV_CONTEXT_SET:', hasattr(n, 'EV_CONT
 
 ### 14.1 当前版本基准
 
-- 当前本地虚拟环境已通过 `importlib.metadata.version('ag2')` 验证为 **AG2 1.3.2**（用户于 2026-11-20 提供实际输出）。
+- 最近一次有实际输出支持的本地版本为 **AG2 1.3.2**（2026-11-20）；GitHub 的 `requirements.txt` 已于 2026-11-27 固定为 **AG2 1.3.4**，但本地虚拟环境尚待升级并重新验证。
 - 本文件早期章节中出现的 AG2 1.3.0 是历史学习记录，不再代表当前安装版本。
-- 查阅官方 GitHub 主干源码时，应记录具体文件链接及对应 commit；主干源码不自动等同于本地安装包的发布版本。涉及版本敏感 API 时，优先用本地 AG2 1.3.2 环境验证。
+- 查阅官方 GitHub 源码时，应记录具体 tag/commit；源码快照不自动等同于本地安装包。当前后续教学目标版本为 AG2 1.3.4，升级完成后再以本地 1.3.4 环境验证版本敏感 API。
 - 当前已从本地 1.3.2 安装目录搜索到 `EV_CONTEXT_SET`、`ChannelInject`、`workflow_helpers.py`、`ContextEquals` 等相关符号；这一步只确认符号存在，不代表审核返工流程已实现或测试通过。
 
 ### 14.2 本阶段官方资料与学习边界
@@ -469,5 +469,32 @@ python -c "import ag2.network as n; print('EV_CONTEXT_SET:', hasattr(n, 'EV_CONT
 
 本阶段采用“先掌握公开 API 的用途与调用方式，再按需深入源码”的教学策略。用户是 Python 初学者，不要求为使用高级 API 而先读懂整个事件系统或依赖注入实现。优先掌握 `ChannelInject` 用于取得当前 Channel、`set_context()` 用于更新 Workflow 共享上下文、`ContextEquals` 用于按上下文值路由；`EV_CONTEXT_SET` 作为底层事件名识别即可，暂不要求直接操作。
 
-当前进度仅为 API 概念学习、官方资料查阅和本地符号搜索。Reviewer 状态更新 Tool、条件转移配置、返工循环、最大返工次数及实际运行验证均待用户分步完成。
+当前已完成 API 概念学习、官方资料查阅、本地旧版本符号搜索，并已由用户编写提交 Reviewer 状态更新 Tool。该工具尚未在真实 Workflow 中运行验证；条件转移配置、返工循环、最大返工次数及端到端运行验证仍待用户分步完成。
 
+
+
+### 12.9 Reviewer 审核状态工具（代码已提交，运行待验证）
+
+用户已将 Reviewer 的首个审核状态工具提交到 GitHub，提交记录：
+- 提交说明：`编写第一个审核工具`
+- Commit：`3aeaeb6ec91e27a62dfec67540060ac0af4e6bcc`
+- 文件：`tools/reviewer_tools.py`
+- 同次提交将 `requirements.txt` 中的依赖固定从 `ag2[openai,ag-ui]==1.3.2` 更新为 `ag2[openai,ag-ui]==1.3.4`。
+
+当前工具实现内容：
+- 使用 `@tool` 注册异步函数 `submit_review()`。
+- `review_status` 使用 `Literal["APPROVED", "REJECTED"]` 限定审核状态。
+- 使用 `ChannelInject` 接收当前 Workflow Channel。
+- 使用 `set_context(channel, "review_status", ...)` 写入审核状态。
+- 使用 `set_context(channel, "review_feedback", ...)` 写入审核意见。
+- Channel 不存在时返回失败提示。
+
+**状态边界：**
+- [x] Reviewer 状态工具代码已由用户编写并提交。
+- [x] 已从 GitHub 提交 diff 核实文件内容及依赖版本变更。
+- [ ] 尚未在真实 Workflow 中验证 `ChannelInject` 是否成功注入。
+- [ ] 尚未验证 `set_context()` 写入的两个字段能否被 `ContextEquals` 读取。
+- [ ] 尚未注册 Reviewer Agent，也尚未验证通过/返工转移。
+- [ ] 尚未完成 Writer → Reviewer → APPROVED 终止 / REJECTED 返工的端到端运行。
+
+下一步应先完成本地 AG2 1.3.4 升级与版本确认，再按 1.3.4 的官方 API 继续 Reviewer Agent 注册和 Workflow 状态验证。不要将“代码已提交”误记为“审核返工闭环已运行通过”。
