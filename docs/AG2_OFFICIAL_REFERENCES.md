@@ -60,3 +60,33 @@
 3. 明确区分“查阅过资料”“理解概念”“代码已实现”“运行已验证”，不得混写。
 4. 官方主干代码与本地安装版本可能存在差异；版本敏感 API 必须在项目虚拟环境中核实。
 5. 用户以逐步实践为主，助手负责检索官方资料并维护本索引；不要求用户为每个 API 自行翻找源码。
+
+
+## 阶段：AG2 1.3.4 版本升级与 Reviewer 审核工具
+
+### 版本来源与核验
+
+- PyPI AG2 1.3.4 发布页面（发布于 2026-11-22）：https://pypi.org/project/ag2/1.3.4/
+- 官方 AG2 源码 tag：`v1.3.4`
+- 官方源码仓库：https://github.com/ag2ai/ag2
+
+### 已核对的 1.3.4 官方源码与文档
+
+| 文件 / API | 核验结果 | 官方链接 |
+|---|---|---|
+| `ag2/network/workflow_helpers.py`：`set_context()`、`delete_context()` | 1.3.4 tag 中仍提供这两个 Workflow helper；`set_context` 通过 `EV_CONTEXT_SET` 写入共享状态 | https://github.com/ag2ai/ag2/blob/v1.3.4/ag2/network/workflow_helpers.py |
+| `ag2/network/client/inject.py`：`ChannelInject` | 1.3.4 tag 中仍定义为注入当前 Channel 的 Annotated 类型别名，默认值为 None | https://github.com/ag2ai/ag2/blob/v1.3.4/ag2/network/client/inject.py |
+| Context Variables 文档 | 1.3.4 文档确认 `WorkflowState.context_vars`、`EV_CONTEXT_SET` 和 `ContextEquals(key=..., value=...)` 的关系 | https://github.com/ag2ai/ag2/blob/v1.3.4/website/docs/user-guide/network/context_variables.mdx |
+| `pyproject.toml` | 官方 tag 的包版本为 1.3.4，Python 要求为 >=3.11 | https://github.com/ag2ai/ag2/blob/v1.3.4/pyproject.toml |
+
+### 当前升级与学习状态（2026-11-27）
+
+- [x] 仓库 `requirements.txt` 已由用户提交并固定为 `ag2[openai,ag-ui]==1.3.4`。
+- [x] 已通过 GitHub 提交 diff 确认 `tools/reviewer_tools.py` 已提交。
+- [x] 已查阅 AG2 官方 `v1.3.4` tag 中的 `ChannelInject` 和 `set_context()` 实现；这些 API 在该 tag 中仍存在。
+- [ ] 本地虚拟环境尚未执行升级。
+- [ ] 尚未从本地环境重新验证 `importlib.metadata.version("ag2")` 输出为 1.3.4。
+- [ ] 升级后尚未运行项目导入检查和 Reviewer 工具检查。
+- [ ] Reviewer 工具尚未在真实 Workflow 中验证 Channel 注入和 Context 更新。
+
+升级时应在项目原有 `.venv` 中执行 `python -m pip install -r requirements.txt`，随后核对实际版本；不要仅凭 requirements.txt 的固定值认定运行环境已升级。
