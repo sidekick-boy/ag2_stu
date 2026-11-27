@@ -436,16 +436,50 @@ python -c "import ag2.network as n; print('EV_CONTEXT_SET:', hasattr(n, 'EV_CONT
 
 确认 API 后，再逐步设计并由用户亲自编写 Reviewer 状态更新 Tool，最后构建最小化条件转移与审核返工示例，逐项运行验证。
 
+
+
+### 12.9 Reviewer 审核状态工具（代码已提交，运行待验证）
+
+用户已将 Reviewer 的首个审核状态工具提交到 GitHub：
+- 提交说明：`编写第一个审核工具`
+- Commit：[3aeaeb6ec91e27a62dfec67540060ac0af4e6bcc](https://github.com/sidekick-boy/ag2_stu/commit/3aeaeb6ec91e27a62dfec67540060ac0af4e6bcc)
+- 文件：`tools/reviewer_tools.py`
+- 同次提交将 `requirements.txt` 从 `ag2[openai,ag-ui]==1.3.2` 更新为 `ag2[openai,ag-ui]==1.3.4`。
+
+工具当前实现：
+- 使用 `@tool` 注册异步函数 `submit_review()`。
+- `review_status` 使用 `Literal["APPROVED", "REJECTED"]` 限定审核状态。
+- 使用 `ChannelInject` 接收当前 Workflow Channel。
+- 使用 `set_context()` 分别写入 `review_status` 和 `review_feedback`。
+- Channel 不存在时返回失败提示。
+
+状态边界：
+- [x] Reviewer 状态工具代码已由用户编写并提交。
+- [x] 已从 GitHub 提交 diff 核实工具实现及依赖版本变更。
+- [ ] 尚未在真实 Workflow 中验证 `ChannelInject` 注入。
+- [ ] 尚未验证两个 Context 字段能被 `ContextEquals` 正确读取。
+- [ ] 尚未注册 Reviewer Agent，也尚未验证通过/返工转移。
+- [ ] 尚未完成 Writer → Reviewer → APPROVED 终止 / REJECTED 返工的端到端运行。
+
+下一步先完成本地 AG2 1.3.4 升级和版本确认，再继续 Reviewer Agent 注册与 Workflow 状态验证。代码已提交不等于审核返工闭环已运行通过。
+
 ## 13. 当前阶段与下一步
 
-**当前阶段：** 初始 Coordinator、Planner、Writer 多 Agent 团队已搭建并完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、工具选择与调用、单参数和多参数传递、枚举参数、默认参数及业务参数校验均已完成相应教学与实战练习。TypedDict 结构化返回值已完成用户测试并提交；TypedDict 的 total、Required、NotRequired、Optional 概念学习已完成。用户通过 AG2 1.3.0 安装环境的源码输出确认了 `DataInput` 继承自 `Input`，并以 `data: SendableMessage` 字段承载数据。用户已完成并提交 TypedDict 结构化返回值改造，且反馈成功查询和数量范围失败场景运行正常。当前教学已进入 AG2 Network Workflow 的 TransitionGraph、条件转移与审核返工机制；已完成 FromSpeaker、ContextEquals、Context Variables、EV_CONTEXT_SET 的概念讲解和审核状态更新练习，但 AG2 1.3.0 对应 API 尚未在本地核实，尚未编写或运行条件转移工作流。中国象棋软件本身尚未开始实现。
+**当前阶段：** 初始 Coordinator、Planner、Writer 团队已完成基础启动验证。AG2 Tool 基础、Agent-as-Tool、Python Function Tool、参数传递、Enum、业务参数校验、TypedDict 结构化返回值及相关概念学习已完成相应实践。当前课程进入 AG2 Network Workflow 的 Reviewer 审核与返工闭环。用户已提交 `tools/reviewer_tools.py`，实现 `submit_review()`，通过 `ChannelInject` 获取 Channel，并使用 `set_context()` 写入 `review_status` 与 `review_feedback`。仓库 `requirements.txt` 已固定 AG2 1.3.4；本地虚拟环境仍待升级和验证。Reviewer 工具尚未在真实 Workflow 中运行，条件转移与返工闭环尚未完成。中国象棋软件本身尚未开始实现。
 
-**下一步教学：** 先由用户在 AG2 1.3.0 虚拟环境检查 `EV_CONTEXT_SET`、`ChannelInject` 等实际导出，再根据实际 API 逐步编写 Reviewer 状态更新 Tool 和最小化 TransitionGraph 条件转移示例。之后再扩展为 Writer → Reviewer → 通过/返工的闭环，并验证状态重置、返工次数和 `max_turns` 等终止保护。TypedDict 进阶代码设计及静态类型检查仍保留为待完成专项练习。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
+**下一步教学：**
+1. 在项目原有 `.venv` 中升级依赖至 requirements.txt 指定版本。
+2. 用 `importlib.metadata.version("ag2")` 验证本地确为 1.3.4。
+3. 对照 AG2 1.3.4 官方源码检查 `ChannelInject`、`set_context()`、`ContextEquals` 等 API，并做最小导入检查。
+4. 逐步创建 Reviewer Agent 并注册 `submit_review`。
+5. 在真实 Workflow 中验证 Channel 注入、Context 更新、条件转移和 Writer 返工循环。
+6. 最后验证状态重置、返工次数与 `max_turns` 终止保护。
 
-**后续课程方向：** 完成 Tool 机制学习后，进入中国象棋业务工具实战，再系统学习 AG2 多 Agent 自主协作闭环；之后开展数字员工标准化建设（MCP、Skills、知识库/RAG、Memory、权限与评估），再推进 AG-UI、平台化和部署。
+TypedDict 进阶代码设计及静态类型检查仍保留为待完成专项练习。当前 `validate_move` 仅用于验证参数传递，不代表已经实现或验证完整象棋走棋规则。
 
-继续教学前应先检查仓库当前文件和 AG2 1.3.0 对应 API；按“原理—用户亲自编写—运行—核对实际日志和输出”的方式推进。未经用户明确授权，不直接修改项目业务代码。
+**后续课程方向：** 完成审核返工闭环后，进入中国象棋业务工具实战，再逐步建设数字员工标准化能力（MCP、Skills、知识库/RAG、Memory、权限与评估），随后推进 AG-UI、平台化和部署。
 
+继续教学时按“原理—用户亲自编写—运行—核对实际日志和输出”的方式推进。未经用户明确授权，不直接修改项目业务代码。
 
 ## 14. 官方资料来源与版本追溯（持续维护）
 
@@ -471,30 +505,3 @@ python -c "import ag2.network as n; print('EV_CONTEXT_SET:', hasattr(n, 'EV_CONT
 
 当前已完成 API 概念学习、官方资料查阅、本地旧版本符号搜索，并已由用户编写提交 Reviewer 状态更新 Tool。该工具尚未在真实 Workflow 中运行验证；条件转移配置、返工循环、最大返工次数及端到端运行验证仍待用户分步完成。
 
-
-
-### 12.9 Reviewer 审核状态工具（代码已提交，运行待验证）
-
-用户已将 Reviewer 的首个审核状态工具提交到 GitHub，提交记录：
-- 提交说明：`编写第一个审核工具`
-- Commit：`3aeaeb6ec91e27a62dfec67540060ac0af4e6bcc`
-- 文件：`tools/reviewer_tools.py`
-- 同次提交将 `requirements.txt` 中的依赖固定从 `ag2[openai,ag-ui]==1.3.2` 更新为 `ag2[openai,ag-ui]==1.3.4`。
-
-当前工具实现内容：
-- 使用 `@tool` 注册异步函数 `submit_review()`。
-- `review_status` 使用 `Literal["APPROVED", "REJECTED"]` 限定审核状态。
-- 使用 `ChannelInject` 接收当前 Workflow Channel。
-- 使用 `set_context(channel, "review_status", ...)` 写入审核状态。
-- 使用 `set_context(channel, "review_feedback", ...)` 写入审核意见。
-- Channel 不存在时返回失败提示。
-
-**状态边界：**
-- [x] Reviewer 状态工具代码已由用户编写并提交。
-- [x] 已从 GitHub 提交 diff 核实文件内容及依赖版本变更。
-- [ ] 尚未在真实 Workflow 中验证 `ChannelInject` 是否成功注入。
-- [ ] 尚未验证 `set_context()` 写入的两个字段能否被 `ContextEquals` 读取。
-- [ ] 尚未注册 Reviewer Agent，也尚未验证通过/返工转移。
-- [ ] 尚未完成 Writer → Reviewer → APPROVED 终止 / REJECTED 返工的端到端运行。
-
-下一步应先完成本地 AG2 1.3.4 升级与版本确认，再按 1.3.4 的官方 API 继续 Reviewer Agent 注册和 Workflow 状态验证。不要将“代码已提交”误记为“审核返工闭环已运行通过”。
