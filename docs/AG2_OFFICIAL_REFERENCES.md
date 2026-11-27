@@ -4,9 +4,9 @@
 
 ## 当前学习基准
 
-- 本地已安装版本：**AG2 1.3.2**
+- 最近一次有用户实际输出支持的本地版本：**AG2 1.3.2**（2026-11-20）；1.3.4 本地升级待验证
 - 版本验证方式：`python -c "import importlib.metadata; print(importlib.metadata.version('ag2'))"`
-- 用户于 2026-11-20 提供的实际输出：`1.3.2`
+- 用户于 2026-11-20 提供的实际输出：`1.3.2`；仓库 requirements.txt 已于 2026-11-27 固定为 `ag2[openai,ag-ui]==1.3.4`
 - 官方源码链接以下列 AG2 仓库 commit 快照固定，避免 `main` 分支后续变化导致链接内容漂移：
   - 源码快照 commit：`6d2dd8bab8af873ea29ed759cfacb572466d925e`
   - 仓库：https://github.com/ag2ai/ag2
